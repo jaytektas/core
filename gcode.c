@@ -1020,17 +1020,31 @@ status_code_t gc_execute_block (char *block)
         if((letter < 'A' && letter != '$') || letter > 'Z')
             FAIL(Status_ExpectedCommandLetter); // [Expected word letter]
 
-        if(letter == 'O') {
-            value = NAN;
-            if((status = read_uint(block, &char_counter, &int_value)) != Status_OK)
-                FAIL(status);
-        } else if(!read_float(block, &char_counter, &value)) {
-            if(user_mcode == UserMCode_NoValueWords)    // Valueless parameters allowed for user defined M-codes.
-                value = NAN;                            // Parameter validation deferred to implementation.
-            else
-                FAIL(Status_BadNumberFormat);           // [Expected word value]
+        if(char_counter == 1 && letter == 'M') // start of a line with M code
+        {
+            if (strlen(block) >= 4)
+            {
+                if (!strncmp(block, "M485", 4))
+                {
+                    value = NAN;
+                    int_value = 485;
+                }
+            }
         }
-
+        
+        if (int_value != 485) // skip value 
+        {
+            if(letter == 'O') {
+                value = NAN;
+                if((status = read_uint(block, &char_counter, &int_value)) != Status_OK)
+                    FAIL(status);
+            } else if(!read_float(block, &char_counter, &value)) {
+                if(user_mcode == UserMCode_NoValueWords)    // Valueless parameters allowed for user defined M-codes.
+                    value = NAN;                            // Parameter validation deferred to implementation.
+                else
+                    FAIL(Status_BadNumberFormat);           // [Expected word value]
+            }
+        }
 #endif
 
         // Convert values to smaller uint8 significand and mantissa values for parsing this word.
@@ -1292,7 +1306,6 @@ status_code_t gc_execute_block (char *block)
                 break;
 
             case 'M': // Determine 'M' command and its modal group
-
                 if(gc_block.non_modal_command == NonModal_MacroCall) {
 
                     if(gc_block.words.m)
@@ -1424,6 +1437,7 @@ status_code_t gc_execute_block (char *block)
                         break;
 
                     default:
+                        if (int_value == 485) char_counter = strlen(block);
                         if(grbl.user_mcode.check && (user_mcode = grbl.user_mcode.check((user_mcode_t)(mantissa ? int_value * 100 + mantissa : int_value)))) {
                             gc_block.user_mcode = (user_mcode_t)(mantissa ? int_value * 100 + mantissa : int_value);
                             word_bit.modal_group.M10 = On;

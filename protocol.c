@@ -52,7 +52,7 @@ typedef union {
 extern void task_execute_on_startup (void);
 
 static uint_fast16_t char_counter = 0;
-static char line[LINE_BUFFER_SIZE]; // Line to be executed. Zero-terminated.
+char line[LINE_BUFFER_SIZE]; // Line to be executed. Zero-terminated.
 static char xcommand[LINE_BUFFER_SIZE];
 static bool keep_rt_commands = false;
 
@@ -197,12 +197,22 @@ bool protocol_main_loop (void)
     xcommand[0] = '\0';
     char_counter = 0;
     keep_rt_commands = false;
+    bool M485;
 
     while(true) {
-
+        M485 = false;
         // Process one line of incoming stream data, as the data becomes available. Performs an
         // initial filtering by removing leading spaces and control characters.
         while((c = hal.stream.read()) != SERIAL_NO_DATA) {
+            if (M485)
+            {
+                if ((c != '\n') && (c != '\r'))
+                {
+                    if(!(line_flags.overflow = char_counter >= (LINE_BUFFER_SIZE - 1)))
+                    line[char_counter++] = c;
+                    continue;
+                }
+            }
 
             if(c == ASCII_CAN) {
 
@@ -322,6 +332,11 @@ bool protocol_main_loop (void)
                 }
                 if(!(line_flags.overflow = char_counter >= (LINE_BUFFER_SIZE - 1)))
                     line[char_counter++] = c;
+
+                if (char_counter == 4)
+                    if ((line[0] == 'M') || (line[0] == 'm'))
+                        if (!strncmp(&line[1], "485", 3))
+                            M485 = true;
             }
         }
 

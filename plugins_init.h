@@ -28,6 +28,11 @@
     fs_stream_init();
 #endif
 
+#if BOARD_JAYTEK_OPENPNP
+    extern void jaytek_openpnp_init(void);
+    jaytek_openpnp_init();
+#endif
+
 #if TRINAMIC_ENABLE
     extern bool trinamic_init (void);
     trinamic_init();

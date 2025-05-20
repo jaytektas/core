@@ -266,6 +266,7 @@ typedef enum {
     OpenPNP_FinishMoves = 400,          //!< 400 - M400
     Probe_Deploy = 401,                 //!< 401 - M401, Marlin format
     Probe_Stow = 402,                   //!< 402 - M402, Marlin format
+    JAYTEK_RS485 = 485,                 //!< 485 - M485, Marlin / OpenPNP / Photon format
     OpenPNP_SettingsReset = 502,        //!< 502 - M502
     Trinamic_ModeToggle = 569,          //!< 569 - M569, Marlin format
     Trinamic_StepperCurrent = 906,      //!< 906 - M906, Marlin format
@@ -274,6 +275,8 @@ typedef enum {
     Trinamic_HybridThreshold = 913,     //!< 913 - M913, Marlin format
     Trinamic_HomingSensitivity = 914,   //!< 914 - M914, Marlin format
     Trinamic_ChopperTiming = 919,       //!< 919 - M919, Marlin format
+    JAYTEK_ReadI2CVacuum = 1000,        //!< 1000 - M1000
+    JAYTEK_GetADCReading = 1001,
     Spindle_Select = UserMCode_Generic4 //!< Value to be assigned later!
 } user_mcode_t;
 
